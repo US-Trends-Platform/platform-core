@@ -1,0 +1,835 @@
+Source Registry
+Project: U.S. Socioeconomic, Political & Agricultural Trends Platform
+Version: 1.0.0
+Date: 2026-08-06
+Status: Draft for Team Review
+
+1. Purpose
+The Source Registry documents every authoritative data source used by the platform.
+
+It serves as:
+
+the primary reference for dataset acquisition and validation;
+the provenance root for all published metrics;
+the governance baseline for source priority, licensing, and methodology;
+the maintenance schedule for automated updates;
+the documentation hub for agency contacts, citation requirements, and historical notes.
+Without an approved entry in this registry, no dataset can be ingested.
+
+2. Registry Governance
+
+
+Rule	Description
+Government Source First	Federal agency sources prioritized; state/local sources deferred unless federated national aggregates exist
+Authority Documentation Required	Must cite authorizing legislation, mission statement, or federal register notice
+Public Accessibility	Source must provide data via public API, bulk download, or FOIA-compliant release
+Unambiguous Provenance	Original agency remains identifiable after retrieval
+License Verifiable	Each source's legitimate public use must be documented
+Versioning Tracked	Changes to upstream dataset schemas/API endpoints recorded
+Failure Notification	Automated alerts if source availability degrades
+3. Registry Structure
+The Source Registry is implemented as:
+
+PostgreSQL tables (sources, datasets, dataset_series) — operational tracking
+YAML configuration files (config/sources/) — declarative source definitions
+Markdown documentation (docs/source-registry/) — human-readable reference
+4. Common Citation Formats
+yaml
+
+
+APA: "{Series Name}. ({year}). {Agency Name}. Retrieved {retrieval_date} from {access_url}"
+Chicago: "{Agency Name}. {year}. '{Series Name}.' Accessed {retrieval_date}. {access_url}."
+MLA: "{Series Name}. {Agency Name}, {year}. Web. {retrieval_date}."
+BibTeX: """
+@dataset{agency_series_YYYY,
+  author       = {{Agency Name}},
+  title        = {{Series Name}},
+  year         = {YYYY},
+  publisher    = {{Agency Name}},
+  url          = {access_url},
+  note         = {retrieved: {retrieval_date}}
+}
+"""
+5. Source Priority Tiers
+
+Tier	Sources
+Tier 1	Federal statistical agencies (Census, BLS, BEA, FRED)
+Tier 2	Federal program agencies (USDA, USCIS, DHS, CMS, NCES, IRS, SSA)
+Tier 3	Independent public institutions (CBO, OMB, Treasury/IRS Statistics)
+Tier 4	Peer-reviewed academic reconstructions (NBER, IPUMS)
+Tier 5	International organizations (World Bank, OECD) — used only for international comparisons
+6. Complete Source Registry
+CORE STATISTICAL AGENCIES
+U.S. Census Bureau
+yaml
+
+
+source_id: census
+agency_name: U.S. Census Bureau
+agency_level: FEDERAL
+homepage_url: https://www.census.gov
+documentation_url: https://www.census.gov/data/developers.html
+api_base_url: https://api.census.gov/data
+retrieval_methods: API
+priority_rank: 1
+is_authoritative: true
+is_active: true
+authority_note: Constitutional mandate per Article I, Section 2; Census Act of 1790
+license_id: public_domain
+license_note: U.S. Federal Government works are not subject to copyright
+
+datasets:
+  
+  - dataset_id: census_decennial
+    slug: census_decennial
+    name: Decennial Census of Population and Housing
+    description: Complete count of population and housing units every 10 years
+    geographic_scope: US_NATIONAL
+    cadence: DECENNIAL
+    documentation_url: https://www.census.gov/programs-surveys/decennial-census.html
+    coverage_start_date: 1790-01-01
+    coverage_end_date: null
+    status: ACTIVE
+    retrieval_method: API
+    api_endpoint: https://api.census.gov/data/2020/dec/dp
+    api_documentation: https://www.census.gov/data/developers.html
+    
+  - dataset_id: census_acs
+    slug: census_acs
+    name: American Community Survey
+    description: Continuous annual survey of 3.5 million households estimating demographic, social, economic, and housing characteristics
+    geographic_scope: US_NATIONAL
+    cadence: ANNUAL
+    coverage_start_date: 2005-01-01
+    coverage_end_date: null
+    methodology_summary: Annual weighted sample of approximately 3.5 million households; margins of error published
+    confidence_tier: SURVEY_ESTIMATE
+    retrieval_method: API
+    api_endpoint: https://api.census.gov/data/{year}/acs/acs5
+Bureau of Labor Statistics
+yaml
+
+
+source_id: bls
+agency_name: Bureau of Labor Statistics
+agency_level: FEDERAL
+homepage_url: https://www.bls.gov
+documentation_url: https://www.bls.gov/developers
+api_base_url: https://api.bls.gov/publicAPI/v2/
+priority_rank: 1
+is_authoritative: true
+license_id: public_domain
+license_note: Public domain; no copyright restrictions
+
+datasets:
+  
+  - dataset_id: bls_cps
+    slug: bls_cps
+    name: Current Population Survey
+    description: Monthly survey of 60,000 households measuring employment, unemployment, and earnings
+    geographic_scope: US_NATIONAL
+    cadence: MONTHLY
+    methodology_summary: Monthly survey of approximately 60,000 eligible households; statistical weighting applied
+    confidence_tier: SURVEY_ESTIMATE
+    retrieval_method: API
+    api_endpoint: https://api.bls.gov/publicAPI/v2/timeseries/data
+    series_definitions:
+      - series_id: LNS14000000
+        name: Unemployment Rate
+        units: percent
+        cadence: MONTHLY
+      - series_id: CES0000000001
+        name: Total Nonfarm Employment
+        units: thousands
+        cadence: MONTHLY
+  
+  - dataset_id: bls_oes
+    slug: bls_oes
+    name: Occupational Employment Statistics
+    description: Estimates of employment and wages for specific occupations nationwide
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    methodology_note: Survey of approximately 1.1 million businesses annually; estimates are annual averages
+    confidence_tier: SURVEY_ESTIMATE
+Bureau of Economic Analysis
+yaml
+
+
+source_id: bea
+agency_name: Bureau of Economic Analysis
+agency_level: FEDERAL
+homepage_url: https://www.bea.gov
+api_base_url: https://apps.bea.gov/api
+priority_rank: 1
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: bea_nipa
+    slug: bea_nipa
+    name: National Income and Product Accounts
+    description: Comprehensive, consistent, and continuous record of U.S. economic activity including GDP, GNI, national income, saving, investment
+    cadence: QUARTERLY
+    geographic_scope: US_NATIONAL
+    methodology_note: Administrative records and statistical surveys; benchmarked every 5 years
+    confidence_tier: OFFICIAL_MEASUREMENT
+    retrieval_method: API
+    api_endpoint: https://apps.bea.gov/api/data
+    series_definitions:
+      - series_id: GDPCA
+        name: Real Gross Domestic Product (billions of chained 2012 dollars)
+        units: billions_of_dollars_chained_2012
+        inflation_basis_year: 2012
+  
+  - dataset_id: bea_fixed_assets
+    slug: bea_fixed_assets
+    name: Fixed Assets Accounts
+    description: Estimates of stocks and depreciation of fixed assets, including net stock, depreciation, investment
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    coverage_start_date: 1925-01-01
+Federal Reserve Economic Data (FRED)
+yaml
+
+
+source_id: fred
+agency_name: Federal Reserve Bank of St. Louis
+agency_level: FEDERAL
+homepage_url: https://fred.stlouisfed.org
+api_base_url: https://api.stlouisfed.org/fred
+priority_rank: 1
+license_id: public_domain
+license_note: FRED aggregates data from multiple federal sources; each series retains original license
+
+datasets:
+  
+  - dataset_id: fred_gdp
+    slug: fred_gdp
+    name: Gross Domestic Product
+    description: Aggregated GDP series from BEA and other sources
+    cadence: QUARTERLY
+    retrieval_method: API
+    api_endpoint: https://api.stlouisfed.org/fred/series/observations
+    api_key_required: true
+    series_definitions:
+      - series_id: GDP
+        name: Gross Domestic Product (billions of dollars)
+        units: billions_of_dollars
+  
+  - dataset_id: fred_inflation
+    slug: fred_inflation
+    name: Inflation Indicators
+    description: Aggregated CPI, PPI, PCE series from BLS and BEA
+    cadence: MONTHLY
+    series_definitions:
+      - series_id: CPIAUCSL
+        name: Consumer Price Index for All Urban Consumers: All Items
+        units: index_1982_1984_100
+        inflation_basis_year: 1982-1984
+BUDGETARY & TAX SOURCES
+Congressional Budget Office
+yaml
+
+
+source_id: cbo
+agency_name: Congressional Budget Office
+agency_level: FEDERAL
+homepage_url: https://www.cbo.gov
+documentation_url: https://www.cbo.gov/about/cbo-api
+priority_rank: 2
+is_authoritative: true
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: cbo_budget_economic_outlook
+    slug: cbo_budget_economic_outlook
+    name: Budget and Economic Outlook
+    description: Projections of federal budget deficits/surpluses and economic indicators
+    cadence: SEMI_ANNUAL
+    methodology_note: Projections, not historical measurements
+    confidence_tier: MODELED_DERIVED
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.cbo.gov/data/budget-economic-outlook-historical-data
+  
+  - dataset_id: cbo_federal_debt
+    slug: cbo_federal_debt
+    name: Federal Debt
+    description: Historical federal debt measured at specific dates
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    coverage_start_date: 1789-01-01
+Department of the Treasury
+```yaml
+source_id: treasury agency_name: U.S. Department of the Treasury agency_level: FEDERAL homepage_url:  https://home.treasury.gov  documentation_url:  https://home.treasury.gov/data  priority_rank: 2 license_id: public_domain
+
+datasets:
+
+dataset_id: treasury_debt_to_penny slug: treasury_debt_to_penny name: Debt to the Penny description: Total public debt outstanding measured daily cadence: DAILY retrieval_method: CSV_DOWNLOAD download_url:  https://treasurydirect.gov/NP/debt/download 
+dataset_id: treasury_budget_receipts_outlays slug: treasury_budget_receipts_outlays name: Monthly Treasury Statement description: Federal receipts, outlays, surplus/deficit by month cadence: MONTHLY
+
+
+## DEPARTMENT OF AGRICULTURE DATASETS
+
+### USDA National Agricultural Statistics Service (NASS)
+
+```yaml
+source_id: usda_nass
+agency_name: U.S. Department of Agriculture - National Agricultural Statistics Service
+agency_level: FEDERAL
+homepage_url: https://www.nass.usda.gov
+documentation_url: https://quickstats.nass.usda.gov/api
+api_base_url: https://quickstats.nass.usda.gov/api/api_GET
+priority_rank: 2
+license_id: public_domain
+license_note: USDA data is public information; released under Title 7 U.S. Code § 2276
+
+datasets:
+  
+  - dataset_id: usda_nass_census_of_agriculture
+    slug: usda_nass_census_of_agriculture
+    name: Census of Agriculture
+    description: Complete enumeration of U.S. farms and ranches and those who operate them
+    cadence: QUINQUENNIAL
+    methodology_summary: Complete enumeration via mail, internet, telephone, face-to-face; includes all farms
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: API
+    api_endpoint: https://quickstats.nass.usda.gov/api/api_GET
+    coverage_start_date: 1840-01-01
+    methodology_note: Conducted every 5 years ending in 2 and 7; decennial before 1997; benchmark for all other agricultural statistics
+    key_metrics:
+      - Farm Count
+      - Farm Acreage
+      - Farm Income
+      - Farm Operator Demographics
+  
+  - dataset_id: usda_nass_annual_surveys
+    slug: usda_nass_annual_surveys
+    name: Annual Agricultural Surveys
+    description: Annual estimates of crop acreage, yield, production, inventories, prices
+    cadence: ANNUAL
+    methodology_summary: Statistical surveys (sample-based); not complete enumeration like Census
+    confidence_tier: SURVEY_ESTIMATE
+    important_note: NOT TO BE BLENDED WITH CENSUS DATA in visualizations; distinct methodological track
+    retrieval_method: API
+USDA Economic Research Service (ERS)
+yaml
+
+
+source_id: usda_ers
+agency_name: U.S. Department of Agriculture - Economic Research Service
+agency_level: FEDERAL
+homepage_url: https://www.ers.usda.gov
+documentation_url: https://www.ers.usda.gov/data-products
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: usda_ers_farm_income_wealth_statistics
+    slug: usda_ers_farm_income_wealth_statistics
+    name: Farm Income and Wealth Statistics
+    description: Estimates of farm sector income and balance sheet accounts
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    methodology_summary: Based on USDA data; includes net farm income calculations
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.ers.usda.gov/data-products/farm-income-and-wealth-statistics
+  
+  - dataset_id: usda_ers_commercial_fertilizer_index
+    slug: usda_ers_commercial_fertilizer_index
+    name: Commercial Fertilizer Index
+    description: Price indices for fertilizer materials
+    cadence: ANNUAL
+    coverage_start_date: 1960-01-01
+    retrieval_method: CSV_DOWNLOAD
+USDA Risk Management Agency (RMA)
+yaml
+
+
+source_id: usda_rma
+agency_name: U.S. Department of Agriculture - Risk Management Agency
+agency_level: FEDERAL
+homepage_url: https://www.rma.usda.gov
+documentation_url: https://www.rma.usda.gov/en/Information-Tools/Summary-of-Business
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: usda_rma_crop_insurance_summary
+    slug: usda_rma_crop_insurance_summary
+    name: Crop Insurance Summary of Business
+    description: Federal crop insurance program data including premiums, liabilities, indemnities, subsidies
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    methodology_note: Administrative records from Federal Crop Insurance Program
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.rma.usda.gov/en/Information-Tools/Summary-of-Business/Cause-of-Loss
+  
+  - dataset_id: usda_rma_subsidy_data
+    slug: usda_rma_subsidy_data
+    name: Crop Insurance Subsidy Data
+    description: Federal premium subsidies by crop, state, program year
+    cadence: ANNUAL
+    retrieval_method: CSV_DOWNLOAD
+IMMIGRATION & POPULATION SOURCES
+U.S. Citizenship and Immigration Services
+yaml
+
+
+source_id: uscis
+agency_name: U.S. Citizenship and Immigration Services
+agency_level: FEDERAL
+homepage_url: https://www.uscis.gov
+documentation_url: https://www.uscis.gov/tools/reports-and-studies/immigration-forms-data
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: uscis_lawful_permanent_residents
+    slug: uscis_lawful_permanent_residents
+    name: Persons Obtaining Lawful Permanent Resident Status
+    description: Individuals granted green card status by class of admission and country of birth
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    methodology_note: Administrative count of adjudicated cases; published as Yearbook of Immigration Statistics
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.dhs.gov/immigration-statistics/yearbook
+  
+  - dataset_id: uscis_naturalizations
+    slug: uscis_naturalizations
+    name: Persons Naturalized
+    description: Individuals who become U.S. citizens through naturalization
+    cadence: ANNUAL
+    retrieval_method: CSV_DOWNLOAD
+  
+  - dataset_id: uscis_visa_statistics
+    slug: uscis_visa_statistics
+    name: Nonimmigrant Visa Statistics
+    description: Temporary (nonimmigrant) visa admissions including H-1B, H-2A, H-2B, L-1, O-1, F-1, J-1, etc.
+    cadence: ANNUAL
+    important_note: These figures represent petitions/approvals, not necessarily entries
+Department of Homeland Security
+yaml
+
+
+source_id: dhs
+agency_name: U.S. Department of Homeland Security
+agency_level: FEDERAL
+homepage_url: https://www.dhs.gov
+documentation_url: https://www.dhs.gov/immigration-statistics
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: dhs_yearbook
+    slug: dhs_yearbook
+    name: Yearbook of Immigration Statistics
+    description: Comprehensive compilation of immigration statistics across multiple agencies and datasets
+    cadence: ANNUAL
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.dhs.gov/immigration-statistics/yearbook
+  
+  - dataset_id: dhs_border_encounters
+    slug: dhs_border_encounters
+    name: U.S. Border Patrol Nationwide Apprehensions
+    description: Border patrol encounters by sector, nationality, demographic
+    cadence: MONTHLY
+    methodology_note: Administrative counts; methodological changes in FY2020 affect pre/post comparability
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+UNDOCUMENTED POPULATION ESTIMATES (Academic/Survey)
+yaml
+
+
+source_id: pew_research_immigration
+agency_name: Pew Research Center
+agency_level: NONPROFIT
+homepage_url: https://www.pewresearch.org
+documentation_url: https://www.pewresearch.org/topic/immigration-issues/immigration-trends
+priority_rank: 4
+license_id: cc_by
+license_note: Attribution required; methodology documented
+
+datasets:
+  
+  - dataset_id: pew_unauthorized_immigrants
+    slug: pew_unauthorized_immigrants
+    name: Unauthorized Immigrant Population Estimates
+    description: Demographically-adjusted residual method estimates of unauthorized immigrant population
+    cadence: ANNUAL
+    geographic_scope: US_NATIONAL
+    methodology_summary: Residual method using Census and American Community Survey; methodological details published
+    confidence_tier: ACADEMIC_ESTIMATE
+    important_note: THIS IS AN ESTIMATE, NOT AN ADMINISTRATIVE COUNT. Must be displayed in separate track, not blended.
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.pewresearch.org/hispanic/dataset/unauthorized-immigrants
+  
+  - dataset_id: cms_unauthorized_estimates
+    slug: cms_unauthorized_estimates
+    name: Office of the Actuary Unauthorized Population Estimates (Medicare)
+    description: Estimates used for CMS actuarial projections
+    cadence: ANNUAL
+    methodology_summary: Administrative records adjusted methodology
+    confidence_tier: ACADEMIC_ESTIMATE
+HEALTHCARE & HEALTH STATISTICS
+Centers for Medicare & Medicaid Services
+yaml
+
+
+source_id: cms
+agency_name: Centers for Medicare & Medicaid Services
+agency_level: FEDERAL
+homepage_url: https://www.cms.gov
+documentation_url: https://www.cms.gov/data-research/statistics-trends-and-reports
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: cms_national_health_expenditures
+    slug: cms_national_health_expenditures
+    name: National Health Expenditure Accounts
+    description: Estimates of total national healthcare spending by category (hospital, physician, prescription drugs, etc.)
+    cadence: ANNUAL
+    coverage_start_date: 1960-01-01
+    methodology_summary: Based on administrative records, surveys, and statistical modeling
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+  
+  - dataset_id: cms_medicare_utilization_payment
+    slug: cms_medicare_utilization_payment
+    name: Medicare Utilization and Payment Data
+    description: Medicare utilization, spending, beneficiary demographics
+    cadence: ANNUAL
+    retrieval_method: CSV_DOWNLOAD
+Centers for Disease Control and Prevention
+```yaml
+source_id: cdc agency_name: Centers for Disease Control and Prevention agency_level: FEDERAL homepage_url:  https://www.cdc.gov  documentation_url:  https://www.cdc.gov/nchs/data_access/ftp_data.htm  priority_rank: 2 license_id: public_domain
+
+datasets:
+
+dataset_id: cdc_nchs_life_expectancy slug: cdc_nchs_life_expectancy name: U.S. Life Expectancy at Birth description: Life expectancy estimates based on complete death registration data cadence: ANNUAL geographic_scope: US_NATIONAL methodology_summary: Abridged life tables based on mortality data from National Vital Statistics System confidence_tier: ADMINISTRATIVE_RECORD retrieval_method: CSV_DOWNLOAD
+dataset_id: cdc_nchs_health_insurance slug: cdc_nchs_health_insurance name: Health Insurance Estimates description: National estimates of health insurance coverage from NHIS cadence: ANNUAL methodology_note: Survey based; margins of error published confidence_tier: SURVEY_ESTIMATE retrieval_method: CSV_DOWNLOAD
+
+
+## EDUCATION STATISTICS
+
+### National Center for Education Statistics
+
+```yaml
+source_id: nces
+agency_name: National Center for Education Statistics
+agency_level: FEDERAL
+homepage_url: https://nces.ed.gov
+documentation_url: https://nces.ed.gov/datalab
+api_base_url: https://api.data.gov/ed/collegescorecard/v1/
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: nces_ipeds_completions
+    slug: nces_ipeds_completions
+    name: Integrated Postsecondary Education Data System (IPEDS) Completions Survey
+    description: Degrees and certificates awarded by postsecondary institutions
+    cadence: ANNUAL
+    methodology_note: Administrative reporting by institutions; coverage includes only Title IV-participating schools
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+  
+  - dataset_id: nces_tuition_costs
+    slug: nces_tuition_costs
+    name: Average Undergraduate Tuition and Fees
+    description: Published tuition and required fees for full-time undergraduates
+    cadence: ANNUAL
+    coverage_start_date: 1963-01-01
+    retrieval_method: CSV_DOWNLOAD
+Federal Student Aid
+yaml
+
+
+source_id: federal_student_aid
+agency_name: U.S. Department of Education - Federal Student Aid
+agency_level: FEDERAL
+homepage_url: https://studentaid.gov
+documentation_url: https://studentaid.gov/data-center
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: fsa_student_loan_debt_portfolio
+    slug: fsa_student_loan_debt_portfolio
+    name: Federal Student Loan Portfolio
+    description: Outstanding federal student loan debt by loan type, repayment status, borrower demographics
+    cadence: ANNUAL
+    methodology_note: Administrative records from Federal Student Aid data center
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://studentaid.gov/data-center/student/portfolio
+INCOME & TAX STATISTICS
+Internal Revenue Service
+yaml
+
+
+source_id: irs
+agency_name: Internal Revenue Service
+agency_level: FEDERAL
+homepage_url: https://www.irs.gov
+documentation_url: https://www.irs.gov/statistics/soi-tax-stats
+priority_rank: 2
+license_id: public_domain
+confidentiality_note: Individual taxpayer data confidential (26 U.S. Code § 6103); published data aggregated and masked
+
+datasets:
+  
+  - dataset_id: irs_soi_individual_income
+    slug: irs_soi_individual_income
+    name: Statistics of Income Individual Income Tax Returns
+    description: Aggregated statistics from individual income tax returns including AGI, income, deductions, credits
+    cadence: ANNUAL
+    methodology_summary: Based on stratified random sample of tax returns; includes complete universe of higher-income returns
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-return-statistics
+  
+  - dataset_id: irs_tax_withholding
+    slug: irs_tax_withholding
+    name: Federal Tax Withholding and Collections
+    description: Federal tax withholding collections by month
+    cadence: MONTHLY
+    methodology_note: Administrative records; published with 2-3 month lag
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+Social Security Administration
+yaml
+
+
+source_id: ssa
+agency_name: Social Security Administration
+agency_level: FEDERAL
+homepage_url: https://www.ssa.gov
+documentation_url: https://www.ssa.gov/open/data
+priority_rank: 2
+license_id: public_domain
+
+datasets:
+  
+  - dataset_id: ssa_wage_stats
+    slug: ssa_wage_stats
+    name: Wage Statistics
+    description: Tabulations from Social Security wage records including median wage, wage distribution
+    cadence: ANNUAL
+    methodology_summary: Based on nearly complete universe of wages reported to Social Security
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: CSV_DOWNLOAD
+    download_url: https://www.ssa.gov/oact/cola/central.html
+REGIONAL & HISTORICAL RECONSTRUCTION SOURCES
+Federal Reserve Archival System for Economic Research (FRASER)
+yaml
+
+
+source_id: fraser_fed
+agency_name: Federal Reserve Bank of St. Louis - FRASER
+agency_level: FEDERAL
+homepage_url: https://fraser.stlouisfed.org
+documentation_url: https://fraser.stlouisfed.org/about
+priority_rank: 3
+license_id: public_domain
+methodology_note: Historical reconstruction from original documents—confidence may vary.
+
+datasets:
+  
+  - dataset_id: fraser_historical_banking
+    slug: fraser_historical_banking
+    name: Historical Banking and Monetary Statistics
+    description: Historical reconstructions of monetary aggregates, bank reserves, interest rates pre-Fed
+    cadence: ANNUAL
+    coverage_start_date: 1776-01-01
+    coverage_end_date: 1913-01-01
+    methodology_summary: Reconstruction from historical ledgers, congressional reports, bank records
+    confidence_tier: HISTORICAL_RECONSTRUCTION
+    retrieval_method: PDF_EXTRACTION
+National Bureau of Economic Research
+yaml
+
+
+source_id: nber
+agency_name: National Bureau of Economic Research
+agency_level: NONPROFIT
+homepage_url: https://www.nber.org
+documentation_url: https://www.nber.org/research/data
+priority_rank: 4
+license_id: cc_by_nc
+license_note: Non-commercial research use; citation required
+
+datasets:
+  
+  - dataset_id: nber_macroeconomics_history
+    slug: nber_macroeconomics_history
+    name: NBER Macroeconomic History Database
+    description: Historical reconstructions of GNP, unemployment, prices pre-1900
+    cadence: ANNUAL
+    coverage_start_date: 1776-01-01
+    coverage_end_date: 1947-01-01
+    methodology_summary: Academic reconstruction from diverse historical sources; methodological papers published
+    confidence_tier: ACADEMIC_ESTIMATE
+    disclaimer: These are reconstructed estimates for periods before official government statistics existed
+    retrieval_method: CSV_DOWNLOAD
+World Bank
+yaml
+
+
+source_id: worldbank
+agency_name: World Bank
+agency_level: INTERNATIONAL
+homepage_url: https://data.worldbank.org
+api_base_url: https://api.worldbank.org/v2
+priority_rank: 5
+license_id: cc_by
+license_note: Attribution required; World Bank data under CC BY 4.0
+use_case: International comparisons only; for GNI/GDP comparisons against other countries
+
+datasets:
+  
+  - dataset_id: worldbank_gdp_us
+    slug: worldbank_gdp_us
+    name: World Bank GDP Series (United States)
+    description: U.S. GDP from World Bank international databases
+    cadence: ANNUAL
+    methodology_note: Aligned with BEA data but reclassified and standardized for international comparison
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: API
+    api_endpoint: https://api.worldbank.org/v2/country/US/indicator/NY.GDP.MKTP.CD
+HISTORICAL LEGISLATION & ADMINISTRATION DATASETS
+Library of Congress Congress.gov
+yaml
+
+
+source_id: congress_gov
+agency_name: Library of Congress
+agency_level: FEDERAL
+homepage_url: https://www.congress.gov
+api_base_url: https://api.congress.gov/v3
+priority_rank: 3
+license_id: public_domain
+use_case: Historical context only—dates of passage, sponsors, summaries
+
+datasets:
+  
+  - dataset_id: congress_major_legislation
+    slug: congress_major_legislation
+    name: Dates of Major Federal Legislation
+    description: Key dates for historically significant legislation identified by the platform team
+    cadence: EVENT_BASED
+    methodology_note: Curated list; legislation selection is interpretative
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: MANUAL_ENTRY
+U.S. House & Senate Historical Offices
+yaml
+
+
+source_id: house_senate_history
+agency_name: U.S. House of Representatives Office of the Historian / U.S. Senate Historical Office
+agency_level: FEDERAL
+homepage_url: https://history.house.gov / https://www.senate.gov/history
+priority_rank: 3
+license_id: public_domain
+important_note: Election results only—party control, members, leadership
+
+datasets:
+  
+  - dataset_id: house_senate_control_history
+    slug: house_senate_control_history
+    name: Party Control of Congress 1789-Present
+    description: Party control (majority/minority) of House and Senate by Congress
+    cadence: BIENNIAL
+    geographic_scope: US_NATIONAL
+    methodology_note: Administrative record of election outcomes and party affiliations
+    confidence_tier: ADMINISTRATIVE_RECORD
+    retrieval_method: MANUAL_ENTRY
+7. Implementation Notes
+7.1 Download vs. API Methods
+API preferred when available (FRED, Census, BLS)
+CSV/JSON download acceptable for stable, regularly updated datasets
+PDF extraction last resort—manual intervention required
+Manual curation for historical/contextual events
+7.2 Metadata Requirements per Source
+Each dataset must be documented with:
+
+
+Field	Required for API	Required for Download
+coverage_start_date	Yes	Yes
+coverage_end_date	If known	If known
+geographic_scope	Yes	Yes
+cadence	Yes	Yes
+methodology_summary	Yes	Yes
+confidence_tier	Yes	Yes
+retrieval_frequency	Yes	Yes
+license_verification	Yes	Yes
+7.3 Source-Specific Challenges & Notes
+
+
+Source	Known Issues	Handling
+USDA NASS Census vs. Annual	Different methodologies, never blended	Separate tracks; labels; methodology notes
+Undocumented population estimates	Not administrative records	Separate track; flagged ACADEMIC_ESTIMATE
+Historical reconstructions	Pre-20th century gaps, disputed numbers	Label HISTORICAL_RECONSTRUCTION; gaps explicit
+BLS revisions	Annual benchmark revisions	Version snapshots; superseded flags
+Congressional district data	Not in Phase 1	Deferred to Phase G
+7.4 Confidence Tier Assignments
+
+
+Agency Typical Tier	Exceptions
+Census/BLS/BEA/BEA	OFFICIAL_MEASUREMENT
+USDA NASS Census	ADMINISTRATIVE_RECORD
+USDA NASS Annual Surveys	SURVEY_ESTIMATE
+ACS, CPS	SURVEY_ESTIMATE
+Administrative agencies (USCIS, IRS, CMS)	ADMINISTRATIVE_RECORD
+Pre-1900 reconstructions	HISTORICAL_RECONSTRUCTION
+Academic organizations (Pew, NBER)	ACADEMIC_ESTIMATE
+Calculations/analytics	MODELED_DERIVED
+8. Registry Integration with Schema
+The source registry tables will be populated with:
+
+sources → One entry per agency/organization
+datasets → Each dataset in registry gets entry
+dataset_series → Each series within dataset
+licenses → License definitions standardized
+metric_series_links → Links metrics to specific dataset series
+SQL Initialization Script
+sql
+
+
+-- Insert licenses
+INSERT INTO licenses (license_id, name, short_code, url, is_open) VALUES
+    (uuid_generate_v4(), 'Public Domain', 'public_domain', 'https://www.usa.gov/public-domain', true),
+    (uuid_generate_v4(), 'Creative Commons Attribution 4.0 International', 'cc_by', 'https://creativecommons.org/licenses/by/4.0/', true),
+    (uuid_generate_v4(), 'MIT License', 'mit', 'https://opensource.org/licenses/MIT', true);
+9. Missing Sources (Deferred)
+The following sources were considered but deferred:
+
+
+Source	Reason for Deferral
+State-level data	Phase G geographic expansion
+County-level data	Phase G geographic expansion
+Metropolitan Statistical Areas	Geographic scope limitation
+Congressional district boundaries	Geographic scope + Phase G
+Individual taxpayer microdata	Confidential; public aggregated only
+Proprietary commercial data	Violates FOSS policy
+Paywalled academic journals	Accessibility restriction
+10. Source Registry Success Criteria
+✅ Source Registry is complete when:
+
+Every authoritative source for Phase 1 domains (Demographics through Historical Events) is registered
+Dataset cadence and methodology documented
+Confidence tier assigned
+Retrieval method verified (API, download access tested)
+License documented and compliant
+ingestion events can be scheduled automatically
