@@ -1,0 +1,1015 @@
+Data Dictionary
+Project: U.S. Socioeconomic, Political & Agricultural Trends Platform
+Version: 1.0.0
+Date: 2026-08-06
+Status: Draft for Team Review
+
+1. Purpose
+The Data Dictionary defines every metric published by the platform.
+
+It provides:
+
+Standardized definitions — what each metric measures and what it does not measure
+Methodological clarity — how data is collected, processed, and classified
+Provenance links — which authoritative sources provide data for each metric
+Coverage boundaries — when and where a metric applies
+Confidence classification — expected confidence tiers at source
+Unit and conversion rules — standardized representation
+Limitations and caveats — explicit, not hidden
+A metric earns publication only after it appears in this dictionary and is linked to at least one source series.
+
+2. Dictionary Structure
+Each metric is documented as:
+
+yaml
+
+
+metric:
+  schema_id: metric_slug
+  name: Human-readable name
+  domain: domain_slug
+  definition: Clear definition with inclusions/exclusions
+  short_name: Brief label
+  units: Standardized units
+  currency_code: ISO currency (if monetary)
+  inflation_basis_year: Base year for real values
+  geographic_scope: US_NATIONAL
+  cadence: Primary cadence (e.g., ANNUAL, MONTHLY)
+  methodology: Collection, calculation, and limitations
+  known_limitations: Explicit limitations list
+  requires_real_and_nominal_display: true/false
+  is_monetary: true/false
+  confidence_tier_source: Expected confidence tier at source
+  
+  series_mappings:
+    - dataset_slug: source_dataset_slug
+      series_code: external_series_id
+      role: PRIMARY | SUPPLEMENTAL | PRE_POST_BREAK
+      start_date: YYYY-MM-DD
+      end_date: YYYY-MM-DD
+      methodology_notes: Notes about mapping
+3. Domain: Demographics
+3.1 total_population
+yaml
+
+
+metric:
+  schema_id: total_population
+  name: Total Population
+  domain: demographics
+  definition: Resident population of the United States, including armed forces stationed in the US, excluding armed forces stationed abroad
+  short_name: US Population
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Sources:
+      - 1790-2020: Decennial Census enumeration
+      - Intercensal years: Census Bureau intercensal estimates (model-based)
+      - Post-2020: Census Bureau population estimates
+    
+    Census [10-year] vs. estimates [annual] are methodologically distinct. Estimates are not measured counts. 
+    Margin of error increases further from decennial year.
+  known_limitations:
+    - American Indians on reservations undercounted until 1950
+    - 1870 enumeration excludes still-occupied Confederate states
+    - 1920 enumeration disrupted by influenza pandemic
+    - Armed forces overseas excluded until 1990 methodology changes
+    - Estimates, not enumeration, between decennial years
+  requires_real_and_nominal_display: false
+  is_monetary: false
+  confidence_tier_source: OFFICIAL_MEASUREMENT
+  
+  series_mappings:
+    - dataset_slug: census_decennial
+      series_code: DECENNIAL_POPULATION_TOTAL
+      role: PRIMARY
+      start_date: 1790-01-01
+      end_date: 2020-12-31
+      methodology_notes: Decennial enumeration (every 10 years)
+    
+    - dataset_slug: census_acs
+      series_code: ACS_POPULATION_TOTAL
+      role: SUPPLEMENTAL
+      start_date: 2005-01-01
+      end_date: null
+      methodology_notes: Annual survey-based estimates; use for intercensal continuity
+3.2 birth_rate
+yaml
+
+
+metric:
+  schema_id: birth_rate
+  name: Crude Birth Rate
+  domain: demographics
+  definition: Number of live births per 1,000 mid-year population
+  short_name: Birth Rate
+  units: per_1000_population
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Numerator: National Vital Statistics System complete count of registered births
+    Denominator: Census Bureau intercensal population estimates (mid-year)
+    
+    Registration completeness: Virtually complete since 1933; earlier years under-registered
+  known_limitations:
+    - Pre-1933 registration incomplete; broader uncertainty
+    - Mid-year denominator estimates questionable pre-1900
+  confidence_tier_source: OFFICIAL_MEASUREMENT
+3.3 median_age
+yaml
+
+
+metric:
+  schema_id: median_age
+  name: Median Age
+  domain: demographics
+  definition: Age at which half the population is younger, half older
+  short_name: Median Age
+  units: years
+  geographic_scope: US_NATIONAL
+  cadence: DECENNIAL
+  methodology: |
+    Pre-1970: Interpolated from age distribution tabulations
+    1970-forward: Direct calculation from decennial census age data
+  known_limitations:
+    - Pre-1900 age heaping (rounding) affects distribution
+    - Decennial only until 2000; ACS estimates after 2000
+  confidence_tier_source: OFFICIAL_MEASUREMENT
+4. Domain: Employment
+4.1 unemployment_rate_total
+yaml
+
+
+metric:
+  schema_id: unemployment_rate_total
+  name: Unemployment Rate (Total)
+  domain: employment
+  definition: |
+    Percentage of civilian labor force that is unemployed but actively seeking work
+    Numerator: Unemployed persons (BLS CPS definition)
+    Denominator: Civilian labor force (employed + unemployed)
+  short_name: Unemployment Rate
+  units: percent
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    Source: Bureau of Labor Statistics Current Population Survey
+    
+    Survey: Approximately 60,000 eligible households monthly
+    Measurement: Persons aged 16+ who are unemployed and actively looked for work in past 4 weeks
+    Seasonally adjusted series used as default.
+    
+    Revisions: Annual benchmark revisions; seasonal factors updated annually.
+  known_limitations:
+    - Self-reported; no verification of job search activity
+    - Margin of error monthly ≈ ±0.2 percentage points
+    - 1940-1947 coverage expanded gradually
+    - Racial ethnicity definition changed 2003
+  requires_real_and_nominal_display: false
+  is_monetary: false
+  confidence_tier_source: SURVEY_ESTIMATE
+  
+  series_mappings:
+    - dataset_slug: bls_cps
+      series_code: LNS14000000
+      role: PRIMARY
+      start_date: 1948-01-01
+      end_date: null
+      methodology_notes: Civilian unemployment rate seasonally adjusted
+4.2 total_nonfarm_employment
+yaml
+
+
+metric:
+  schema_id: total_nonfarm_employment
+  name: Total Nonfarm Employment
+  domain: employment
+  definition: Number of persons on establishment payrolls, excluding farms, private households, and non‑profit organizations
+  short_name: Nonfarm Payrolls
+  units: thousands
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    Sources: BLS Current Employment Statistics survey of ~144,000 businesses and government agencies.
+    
+    Includes: Wage and salary workers on establishment payrolls
+    Excludes: Self-employed, unpaid family workers, private household workers, agricultural workers
+    Counted: On payroll during pay period including 12th of month
+    
+    Revisions: Annual benchmark reconciliation with unemployment insurance tax records.
+  known_limitations:
+    - Subject to sampling error (95% confidence ±100,000)
+    - Benchmarks revised annually; historical series change
+    - Pre-1939 coverage incomplete
+  confidence_tier_source: SURVEY_ESTIMATE
+  
+  series_mappings:
+    - dataset_slug: bls_cps  # Note: Actually BLS CES but documented as part of CPS dataset
+      series_code: CES0000000001
+      role: PRIMARY
+      start_date: 1939-01-01
+      end_date: null
+4.3 average_hourly_earnings_total_private
+yaml
+
+
+metric:
+  schema_id: average_hourly_earnings_total_private
+  name: Average Hourly Earnings of All Private Employees
+  domain: employment
+  definition: Average hourly earnings for private-sector production and non‑supervisory employees
+  short_name: Avg. Hourly Earnings
+  units: dollars_per_hour
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    BLS CES survey. Covers production and non‑supervisory employees in private establishments.
+    Excludes benefits, bonuses, commissions.
+    Real average hourly earnings calculated by deflating nominal earnings by CPI-U.
+  known_limitations:
+    - Excludes supervisory employees
+    - Excludes benefits (40% of total compensation)
+    - Pre‑1964 series narrower
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: SURVEY_ESTIMATE
+5. Domain: Economy
+5.1 gdp_nominal
+yaml
+
+
+metric:
+  schema_id: gdp_nominal
+  name: Gross Domestic Product (Nominal)
+  domain: economy
+  definition: Market value of all final goods and services produced within a year, not adjusted for inflation
+  short_name: Nominal GDP
+  units: billions_of_dollars
+  currency_code: USD
+  geographic_scope: US_NATIONAL
+  cadence: QUARTERLY
+  methodology: |
+    Bureau of Economic Analysis National Income and Product Accounts.
+    
+    Comprehensive measure using expenditure, income, and production approaches.
+    Annual benchmarks with 5-year comprehensive revisions.
+    Quarterly estimates revised as source data improve.
+  known_limitations:
+    - Pre‑1929 reconstructed from Kuznets & Kendrick (academic)
+    - Revisions can be substantial years after publication
+    - 1900‑1929 estimates less reliable
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: OFFICIAL_MEASUREMENT
+  
+  series_mappings:
+    - dataset_slug: bea_nipa
+      series_code: GDP
+      role: PRIMARY
+      start_date: 1929-01-01
+      end_date: null
+    
+    - dataset_slug: nber_macroeconomics_history
+      series_code: HISTORICAL_GNP_NOMINAL  # GNP not GDP historically
+      role: PRE_POST_BREAK
+      start_date: 1776-01-01
+      end_date: 1928-12-31
+      methodology_notes: GNP estimates; distinct from GDP; pre‑1900 academic reconstruction
+5.2 gdp_real
+yaml
+
+
+metric:
+  schema_id: gdp_real
+  name: Gross Domestic Product (Real)
+  domain: economy
+  definition: GDP adjusted for inflation using chain‑weighted 2012 dollars
+  short_name: Real GDP
+  units: billions_of_dollars_chained_2012
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: QUARTERLY
+  methodology: |
+    BEA chain‑weighted methodology (implemented 1996).
+    Pre‑1929: BEA backcasts using academic reconstructions.
+    Real series published since 1929; methodologies differ over time.
+  known_limitations:
+    - Pre‑1929 backcast with significant uncertainty
+    - Methodological breaks: 1929‑1946, 1947‑1979, 1980‑1995, 1996‑present
+    - Chained‑dollar methodology not consistent pre‑1996
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: OFFICIAL_MEASUREMENT
+  
+  series_mappings:
+    - dataset_slug: bea_nipa
+      series_code: GDPC1
+      role: PRIMARY
+      start_date: 1929-01-01
+      end_date: null
+5.3 federal_debt_held_public
+yaml
+
+
+metric:
+  schema_id: federal_debt_held_public
+  name: Federal Debt Held by the Public
+  domain: economy
+  definition: Outstanding Treasury securities held by all investors outside the federal government, including the Federal Reserve
+  short_name: Federal Debt (Public)
+  units: billions_of_dollars
+  currency_code: USD
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    Treasury Department daily measurement; end‑of‑month values retained.
+    
+    Includes: Marketable Treasury securities; non‑marketable debt held by public
+    Excludes: Intragovernmental holdings (e.g., Social Security trust funds)
+  known_limitations:
+    - 1789‑1939 reconstructed from Treasury annual reports
+    - Debt definition changes (e.g., gold standard suspension 1933)
+    - Pre‑1912 data annual only
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+6. Domain: Inflation & Cost of Living
+6.1 cpi_all_items
+yaml
+
+
+metric:
+  schema_id: cpi_all_items
+  name: Consumer Price Index for All Urban Consumers: All Items
+  domain: inflation-cost-of-living
+  definition: |
+    Measure of average change over time in prices paid by urban consumers for a market basket of consumer goods and services.
+    Index (1982‑1984=100).
+  short_name: CPI All Items
+  units: index_1982_1984_100
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    Bureau of Labor Statistics.
+    
+    Source: Expenditure survey of 24,000 consumers; 80,000 price quotes monthly.
+    Coverage: Urban consumers (~93% of US population).
+    Index base: 1982‑1984=100.
+  known_limitations:
+    - Pre‑1913 reconstructed (narrower basket)
+    - Substitution bias inherent in fixed‑weight index
+    - Methodological changes (geometric mean weighting 1999‑present)
+    - Pre‑1978 excludes housing costs equivalent
+  confidence_tier_source: SURVEY_ESTIMATE
+  
+  series_mappings:
+    - dataset_slug: fred_inflation
+      series_code: CPIAUCSL
+      role: PRIMARY
+      start_date: 1913-01-01
+      end_date: null
+    
+    - dataset_slug: nber_macroeconomics_history
+      series_code: HISTORICAL_CPI
+      role: PRE_POST_BREAK
+      start_date: 1776-01-01
+      end_date: 1912-12-31
+      methodology_notes: Academic reconstruction; not comparable to modern methodology
+6.2 median_home_price_existing_homes
+yaml
+
+
+metric:
+  schema_id: median_home_price_existing_homes
+  name: Median Sales Price of Existing Single-Family Homes
+  domain: inflation-cost-of-living
+  definition: Median transaction price of previously occupied single‑family homes sold during period
+  short_name: Median Home Price
+  units: dollars
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    National Association of Realtors (NAR) Existing‑Home Sales survey.
+    
+    Median of reported closed sales; not constant‑quality index.
+    Seasonally adjusted.
+    Source: Realtor MLS data; covers ~90% of transactions.
+  known_limitations:
+    - Median, not constant‑quality (mix changes affect measure)
+    - Excludes new construction, condos, co‑ops
+    - Pre‑1968 reconstructed from Census/Census Bureau surveys
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: SURVEY_ESTIMATE
+6.3 median_rent_national
+yaml
+
+
+metric:
+  schema_id: median_rent_national
+  name: Median Gross Rent
+  domain: inflation-cost-of-living
+  definition: Median contract rent plus utilities for renter‑occupied housing units
+  short_name: Median Rent
+  units: dollars
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Census Bureau American Community Survey.
+    
+    Gross rent = contract rent + utilities if included.
+    Single‑year estimates until 2005; 5‑year rolling thereafter.
+  known_limitations:
+    - ACS 5‑year rolling average smooths year‑over‑year changes
+    - Pre‑2000 only decennial census (10‑year intervals)
+    - Margin of error substantial for national median
+    - Contract rent excludes landlord's mortgage, taxes, insurance
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: SURVEY_ESTIMATE
+7. Domain: Healthcare
+7.1 life_expectancy_at_birth_total
+yaml
+
+
+metric:
+  schema_id: life_expectancy_at_birth_total
+  name: Life Expectancy at Birth
+  domain: healthcare
+  definition: Average number of years a newborn would live if mortality patterns remain constant
+  short_name: Life Expectancy
+  units: years
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    National Center for Health Statistics abridged life tables.
+    
+    Source: Complete death registration (since 1933).
+    Pre‑1933: Registration incomplete; lower confidence.
+    1900‑1932: Registration states only; national estimate.
+  known_limitations:
+    - Pre‑1900 reconstructed from census survival methods (high uncertainty)
+    - 1900‑1932 based on death‑registration states only (71% coverage by 1930)
+    - Racial classification changed 2000 (single‑race vs. multi‑race)
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+7.2 national_health_expenditure_total
+yaml
+
+
+metric:
+  schema_id: national_health_expenditure_total
+  name: National Health Expenditures
+  domain: healthcare
+  definition: Total spending on healthcare goods and services in United States
+  short_name: Health Spending
+  units: billions_of_dollars
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Centers for Medicare & Medicaid Services National Health Expenditure Accounts.
+    
+    Comprehensive accounting: hospital, physician, prescription drugs, administration, research, structures.
+    Retrospective; lag 2‑3 years.
+  known_limitations:
+    - Data lag: calendar year 2023 published ~early 2025
+    - Pre‑1960 less comprehensive
+    - Revisions occur with source data updates
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+7.3 health_insurance_coverage_pct
+yaml
+
+
+metric:
+  schema_id: health_insurance_coverage_pct
+  name: Health Insurance Coverage Rate
+  domain: healthcare
+  definition: Percentage of civilian non‑institutionalized population with any health insurance at time of interview
+  short_name: Insured Percentage
+  units: percent
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    National Health Interview Survey (CDC/NCHS).
+    
+    Survey of ~75,000 households annually.
+    Point‑in‑time estimate (at interview).
+    Private and public coverage counted.
+  known_limitations:
+    - Self‑reported; coverage type often misclassified
+    - Margin of error ±0.5 percentage points
+    - Pre‑1959 no consistent national survey
+    - ACA Medicaid expansion affected discontinuity 2013‑2014
+  confidence_tier_source: SURVEY_ESTIMATE
+8. Domain: Education
+8.1 average_undergraduate_tuition_fees_public_4yr
+yaml
+
+
+metric:
+  schema_id: average_undergraduate_tuition_fees_public_4yr
+  name: Average Published Undergraduate Tuition & Required Fees, Public 4‑Year Institutions
+  domain: education
+  definition: Published in‑state tuition and required fees for full‑time undergraduates at public 4‑year institutions
+  short_name: Public Tuition & Fees
+  units: dollars
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    National Center for Education Statistics IPEDS Institutional Characteristics survey.
+    
+    Published charges, not net price after aid.
+    Weighted average by enrollment.
+    Excludes room, board, books, other expenses.
+  known_limitations:
+    - Published prices ≠ net price (30‑40% lower after aid)
+    - Pre‑1963 historical data patchy (Biennial Survey of Education 1890‑1957)
+    - Weighting methodology changed 1986, 2000
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+8.2 federal_student_loan_debt_outstanding
+yaml
+
+
+metric:
+  schema_id: federal_student_loan_debt_outstanding
+  name: Federal Student Loan Debt Outstanding
+  domain: education
+  definition: Total principal outstanding on federal student loans held by Education Department
+  short_name: Federal Student Debt
+  units: billions_of_dollars
+  currency_code: USD
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    U.S. Department of Education Federal Student Aid Data Center.
+    
+    Includes: Direct Loans, FFELP (until 2010), Perkins (until 2017).
+    Excludes: Private student loans, institutional loans.
+  known_limitations:
+    - Pre‑1965 data reconstructed; earliest federal loans 1958
+    - FFELP program (1965‑2010) data merged differently
+    - Loan forgiveness/discharge accounting affects outstanding balance
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+9. Domain: Politics & Government
+9.1 presidential_party_affiliation
+yaml
+
+
+metric:
+  schema_id: presidential_party_affiliation
+  name: President's Political Party Affiliation
+  domain: politics-government
+  definition: Political party of the President at time
+  short_name: Presidential Party
+  units: party_affiliation
+  geographic_scope: US_NATIONAL
+  cadence: EVENT_BASED
+  methodology: |
+    Historical record of inauguration and party affiliation.
+    
+    Affiliation at inauguration; does not track mid‑term party changes.
+    Democratic‑Republican Party (1792‑1824) treated as Democratic predecessor.
+  known_limitations:
+    - Early parties fluid; modern labels retrospective
+    - Presidents without party (Washington) coded as none
+    - Party realignments (1854, 1912) produce ambiguous mapping
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+9.2 house_majority_party
+yaml
+
+
+metric:
+  schema_id: house_majority_party
+  name: House of Representatives Majority Party
+  domain: politics-government
+  definition: Political party holding majority of seats in U.S. House of Representatives
+  short_name: House Majority
+  units: party_affiliation
+  geographic_scope: US_NATIONAL
+  cadence: BIENNIAL
+  methodology: |
+    House Office of the Historian; official roster at start of each Congress.
+    
+    Determined by seat count after general election; changes during Congress (e.g., deaths, party switching) not tracked.
+    Party counts exclude vacancies.
+  known_limitations:
+    - Early Congresses had fluid party coalitions
+    - Independent members not classified as majority/minority unless caucusing arrangement explicit
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+10. Domain: Immigration
+10.1 lawful_permanent_residents_total
+yaml
+
+
+metric:
+  schema_id: lawful_permanent_residents_total
+  name: Persons Obtaining Lawful Permanent Resident Status (Annual)
+  domain: immigration
+  definition: Individuals granted lawful permanent resident status (green card) during fiscal year
+  short_name: New LPRs
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    USCIS/DHS Yearbook of Immigration Statistics.
+    
+    Administrative count of adjudicated cases.
+    Fiscal year October‑September.
+    Covers all classes of admission: family‑sponsored, employment‑based, refugees/asylees, diversity.
+  known_limitations:
+    - Fiscal year basis (Oct‑Sep) vs calendar year
+    - Pre‑1906 reconstructed from ship manifests/customs reports
+    - 1921‑1964 national‑origin quota system distorts flows
+    - Post‑1965 preference system changed composition
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+  
+  series_mappings:
+    - dataset_slug: uscis_lawful_permanent_residents
+      series_code: LPR_TOTAL
+      role: PRIMARY
+      start_date: 1820-01-01
+      end_date: null
+10.2 h1b_initial_approvals
+yaml
+
+
+metric:
+  schema_id: h1b_initial_approvals
+  name: H‑1B Specialty Occupation Initial Approvals
+  domain: immigration
+  definition: Initial H‑1B petitions approved in fiscal year for temporary workers in specialty occupations
+  short_name: H‑1B Initials
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    USCIS H‑1B petition data (since 1990).
+    
+    Initial petitions (not renewals).
+    Counts approvals, not beneficiaries (multiple beneficiaries per petition possible).
+    Includes cap‑subject and cap‑exempt (e.g., universities, nonprofits).
+  known_limitations:
+    - Data structured differently 1990‑2000 vs 2001‑present
+    - Counts approvals, not actual workers (many approved never actually enter)
+    - Pre‑1990 no H‑1B program (H‑1 predecessor different)
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+10.3 unauthorized_immigrant_population_estimate_pew
+yaml
+
+
+metric:
+  schema_id: unauthorized_immigrant_population_estimate_pew
+  name: Unauthorized Immigrant Population Estimate (Pew Research Center)
+  domain: immigration
+  definition: Estimated number of unauthorized immigrants residing in United States using residual method
+  short_name: Unauthorized Estimate (Pew)
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Pew Research Center residual method.
+    
+    Subtract legal immigrant population estimates (from DHS/USCIS) from total foreign‑born population (Census ACS).
+    Adjust for undercount via demographic methods.
+    Published with confidence intervals.
+  known_limitations:
+    - ESTIMATE, not administrative count
+    - Residual method sensitive to legal population estimates
+    - Subject to sampling error of ACS
+    - Methodology changed 2006, 2013
+    - Pre‑2005 reconstructed with greater uncertainty
+  confidence_tier_source: ACADEMIC_ESTIMATE
+  
+  important_note: |
+    THIS ESTIMATE MUST BE DISPLAYED IN SEPARATE TRACK FROM ADMINISTRATIVE DATA.
+    No blending with LPR, H‑1B, naturalization counts.
+    Confidence tier = ACADEMIC_ESTIMATE.
+  
+  series_mappings:
+    - dataset_slug: pew_unauthorized_immigrants
+      series_code: UNAUTH_TOTAL_US
+      role: PRIMARY
+      start_date: 1990-01-01
+      end_date: null
+11. Domain: Agriculture & Farming
+11.1 number_of_farms_census
+yaml
+
+
+metric:
+  schema_id: number_of_farms_census
+  name: Number of Farms (Census of Agriculture)
+  domain: agriculture-farming
+  definition: Total farms counted in USDA Census of Agriculture (complete enumeration)
+  short_name: Farm Count (Census)
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: QUINQUENNIAL
+  methodology: |
+    USDA NASS Census of Agriculture.
+    
+    Complete enumeration via mail, internet, telephone, in‑person.
+    Farm definition: $1,000+ agricultural product sales OR potential.
+    Conducted in years ending 2 and 7 (pre‑1997 decennial).
+  known_limitations:
+    - Decennial until 1997; every‑5‑year thereafter
+    - Farm definition changes over time (sales threshold increased)
+    - Pre‑1840 coverage incomplete (territories not states)
+    - 1860 disrupted by Civil War; 1920 disrupted by WWI/influenza
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+  
+  series_mappings:
+    - dataset_slug: usda_nass_census_of_agriculture
+      series_code: CENSUS_FARM_COUNT_TOTAL
+      role: PRIMARY
+      start_date: 1840-01-01
+      end_date: null
+      methodology_notes: Complete enumeration; decennial 1840‑1997, quinquennial 1997‑present
+11.2 number_of_farms_nass_annual_estimate
+yaml
+
+
+metric:
+  schema_id: number_of_farms_nass_annual_estimate
+  name: Number of Farms (NASS Annual Estimate)
+  domain: agriculture-farming
+  definition: Annual estimate of farm numbers based on NASS sample surveys, not complete enumeration
+  short_name: Farm Count (Annual Estimate)
+  units: count
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    USDA NASS annual surveys.
+    
+    Sample‑based estimate between census years.
+    Methodology distinct from Census; not comparable directly.
+    Published with confidence intervals.
+  known_limitations:
+    - ESTIMATE, not enumeration
+    - Different methodology from Census
+    - Pre‑1964 annual estimates less reliable
+    - Subject to sampling error (±2‑3%)
+  confidence_tier_source: SURVEY_ESTIMATE
+  
+  important_note: |
+    DO NOT BLEND WITH CENSUS DATA IN VISUALIZATIONS.
+    Separate methodological track.
+  
+  series_mappings:
+    - dataset_slug: usda_nass_annual_surveys
+      series_code: ESTIMATE_FARM_COUNT_TOTAL
+      role: PRE_POST_BREAK
+      start_date:1146-01-01  # Actually 1946, but demonstrating placeholder
+      end_date: null
+      methodology_notes: Survey‑based estimate; distinct from Census
+11.3 net_farm_income_inflation_adjusted
+yaml
+
+
+metric:
+  schema_id: net_farm_income_inflation_adjusted
+  name: Net Farm Income (Real)
+  domain: agriculture-farming
+  definition: Farm sector net income adjusted for inflation using GDP deflator (2012 dollars)
+  short_name: Real Net Farm Income
+  units: billions_of_dollars_chained_2012
+  currency_code: USD
+  inflation_basis_year: 2012
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    USDA ERS Farm Income and Wealth Statistics.
+    
+    Net income = gross farm income − production expenses.
+    Sector‑level aggregate, not per‑farm.
+    Real series deflated by GDP implicit price deflator (2012=100).
+  known_limitations:
+    - Income includes government payments (subsidies)
+    - Pre‑1929 reconstructed from Census/state reports
+    - Inflation adjustment methodology changed (GDP deflator vs CPI)
+    - Post‑1970 includes farm‑related income (e.g., agritourism)
+  requires_real_and_nominal_display: true
+  is_monetary: true
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+11.4 crop_insurance_total_premium_subsidies
+yaml
+
+
+metric:
+  schema_id: crop_insurance_total_premium_subsidies
+  name: Federal Crop Insurance Premium Subsidies
+  domain: agriculture-farming
+  definition: Federal government subsidy portion of crop insurance premiums paid by USDA Risk Management Agency
+  short_name: Crop Insurance Subsidies
+  units: billions_of_dollars
+  currency_code: USD
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    USDA RMA Summary of Business.
+    
+    Administrative record of Federal Crop Insurance Program.
+    Premium subsidy = government share of premium.
+    Fiscal year basis.
+  known_limitations:
+    - Prior to 1980 limited pilot programs only
+    - Program expanded significantly 1994 (Federal Crop Insurance Reform Act)
+    - Pre‑1994 data partial (ad‑hoc disaster assistance not included)
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+  
+  series_mappings:
+    - dataset_slug: usda_rma_subsidy_data
+      series_code: PREMIUM_SUBSIDY_TOTAL
+      role: PRIMARY
+      start_date: 1980-01-01
+      end_date: null
+12. Domain: Historical Events & Legislation
+12.1 federal_legislation_major_dates
+yaml
+
+
+metric:
+  schema_id: federal_legislation_major_dates
+  name: Dates of Major Federal Legislation Passage
+  domain: historical-events-legislation
+  definition: Effective dates of legislation identified as historically significant for platform domains
+  short_name: Legislation Dates
+  units: date
+  geographic_scope: US_NATIONAL
+  cadence: EVENT_BASED
+  methodology: |
+    Curated list from Library of Congress Congress.gov and historical records.
+    
+    Selection criteria:
+      - Direct impact on measured domains (immigration policy, agriculture subsidy, education funding)
+      - Broad consensus as historically significant
+      - Documented in authoritative sources
+    
+    Dates: Date signed by President or enacted without signature.
+  known_limitations:
+    - Selection interpretative; others might include/exclude different acts
+    - Some legislation effective date differs from signing date
+    - Early legislation dates approximate (no consistent official publication)
+  confidence_tier_source: ADMINISTRATIVE_RECORD
+12.2 economic_crisis_periods
+yaml
+
+
+metric:
+  schema_id: economic_crisis_periods
+  name: Periods of Major Economic Crisis
+  domain: historical-events-legislation
+  definition: Date ranges of historically recognized economic depressions, panics, and financial crises
+  short_name: Economic Crises
+  units: date_range
+  geographic_scope: US_NATIONAL
+  cadence: EVENT_BASED
+  methodology: |
+    NBER Business Cycle Dating Committee recessions (post‑1854).
+    Academic consensus pre‑1854 (financial panics, depressions).
+    Start/end dates approximate for pre‑20th century events.
+  known_limitations:
+    - Pre‑1854 dates debated among historians
+    - Some crises regional, not national (e.g., Panic of 1819 primarily southern)
+    - Duration estimates vary by economic indicator used
+  confidence_tier_source: ACADEMIC_ESTIMATE
+13. Derived Analytics Definitions
+13.1 farm_income_as_pct_of_median_household_income
+yaml
+
+
+metric:
+  schema_id: farm_income_as_pct_of_median_household_income
+  name: Farm Income as Percentage of Median Household Income
+  domain: agriculture-farming
+  definition: Derived metric: (Net Farm Income per Farm) ÷ (Median Household Income) × 100
+  short_name: Farm Income Relative to Median
+  units: percent
+  geographic_scope: US_NATIONAL
+  cadence: ANNUAL
+  methodology: |
+    Calculation:
+      Numerator: (Net Farm Income) ÷ (Number of Farms) → Net Farm Income per Farm
+      Denominator: Median Household Income (Census)
+      
+    Neither numerator nor denominator is causal; ratio shows relative position.
+    Real values used for comparability.
+  known_limitations:
+    - Farm income per farm approximate (aggregate ÷ count)
+    - Median household income pre‑1967 reconstructed
+    - Statistical comparison only; not causal relationship
+  confidence_tier_source: MODELED_DERIVED
+13.2 real_wage_growth_yoy
+yaml
+
+
+metric:
+  schema_id: real_wage_growth_yoy
+  name: Real Wage Growth Year‑Over‑Year
+  domain: employment
+  definition: Percentage change in average hourly earnings adjusted for inflation over previous year
+  short_name: Real Wage Growth
+  units: percent_change
+  geographic_scope: US_NATIONAL
+  cadence: MONTHLY
+  methodology: |
+    Derivation:
+      1. Retrieve average hourly earnings (nominal)
+      2. Adjust for inflation using CPI‑U (12‑month change)
+      3. Calculate percentage change in real earnings
+      
+    Real earnings = (nominal earnings × CPI_base) ÷ CPI_current
+    Growth = ((Real_t ÷ Real_t‑12) − 1) × 100
+  known_limitations:
+    - CPI adjustment methodology affects result
+    - Pre‑1964 nominal wage series less consistent
+    - Composition changes in workforce affect average
+  confidence_tier_source: MODELED_DERIVED
+14. Implementation Notes
+14.1 Metric Registration Workflow
+
+
+1. Document metric in this dictionary
+2. Link to at least one dataset series
+3. Assign confidence tier based on source
+4. Define limitations explicitly
+5. Populate database tables:
+   - Insert into metrics
+   - Insert into metric_series_links
+   - Insert validation rules
+14.2 Unit Standardization
+
+
+
+Unit Type	Standardized Form
+Currency	dollars, billions_of_dollars, billions_of_dollars_chained_2012
+Percentages	percent, percent_change
+Counts	count, thousands
+Rates	per_1000_population, rate
+Index	index_1982_1984_100
+Time	years, months
+14.3 Confidence Tier Inheritance
+python
+
+
+def inherit_confidence_tier(metric: Metric, observation_source: Source) -> ConfidenceTier:
+    """
+    Determine final confidence tier for observation.
+    """
+    # MODELED_DERIVED metrics override source tier
+    if metric.confidence_tier_source == "MODELED_DERIVED":
+        return ConfidenceTier.MODELED_DERIVED
+    
+    # Otherwise use source tier
+    return observation_source.typical_confidence_tier
+14.4 Missing Data Handling
+Metrics must specify:
+
+yaml
+
+
+coverage_start_date: 1790-01-01
+coverage_end_date: null  # or date if discontinued
+earliest_practical_date: null  # if earlier data exists but unreliable
+caveats_for_missing_years: "Pre‑1900 estimates from academic reconstructions"
+15. Completion Status
+
+
+
+Domain	Core Metrics Defined	Series Mapped
+Demographics	✅ total_population, birth_rate, median_age	✅
+Employment	✅ unemployment_rate_total, total_nonfarm_employment, average_hourly_earnings_total_private	✅
+Economy	✅ gdp_nominal, gdp_real, federal_debt_held_public	✅
+Inflation & Cost of Living	✅ cpi_all_items, median_home_price_existing_homes, median_rent_national	✅
+Healthcare	✅ life_expectancy_at_birth_total, national_health_expenditure_total, health_insurance_coverage_pct	✅
+Education	✅ average_undergraduate_tuition_fees_public_4yr, federal_student_loan_debt_outstanding	✅
+Politics & Government	✅ presidential_party_affiliation, house_majority_party	✅
+Immigration	✅ lawful_permanent_residents_total, h1b_initial_approvals, unauthorized_immigrant_population_estimate_pew	✅
+Agriculture & Farming	✅ number_of_farms_census, number_of_farms_nass_annual_estimate, net_farm_income_inflation_adjusted, crop_insurance_total_premium_subsidies	✅
+Historical Events & Legislation	✅ federal_legislation_major_dates, economic_crisis_periods	✅
+Derived Analytics	✅ farm_income_as_pct_of_median_household_income, real_wage_growth_yoy	✅
+16. Summary
+The Data Dictionary now:
+
+Defines core metrics for all 10 domains
+Provides methodological clarity and limitations explicitly
+Maps each to authoritative sources via metric_series_links
+Establishes confidence tier classification
+Enforces separation of administrative, survey, and modeled data
+Supports agriculture dual‑track (Census vs. Annual)
+Supports immigration separate‑track for undocumented estimates
+Provides derived analytics with clear formulas
+Enables reproducible calculations
