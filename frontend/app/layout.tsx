@@ -1,8 +1,23 @@
-import React from 'react';
+﻿import type { Metadata } from "next";
+import { Fraunces, IBM_Plex_Mono } from "next/font/google";
+import "./globals.css";
 
-export const metadata = {
-  title: 'US Socioeconomic, Political & Agricultural Trends Platform',
-  description: 'Evidence-based historical data tracking 1776�present.',
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "US Trends Platform",
+  description: "Evidence infrastructure — 1776 to present",
 };
 
 export default function RootLayout({
@@ -12,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-100 min-h-screen antialiased flex">
+      <body className={`${fraunces.variable} ${ibmPlexMono.variable}`}>
         {children}
       </body>
     </html>

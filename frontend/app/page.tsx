@@ -1,24 +1,22 @@
-import React from 'react';
-import { Sidebar } from './components/Sidebar';
+﻿import { Sidebar } from './components/Sidebar';
 import { Timeline } from './components/Timeline';
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <div className="flex w-full min-h-screen">
+    <div className="flex min-h-screen">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:bg-ink focus:text-paper focus:px-4 focus:py-2 focus:text-sm focus:rounded"
+      >
+        Skip to main content
+      </a>
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <main id="main-content" className="flex-1 p-6">
         <Timeline />
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto" id="main-content">
-          <section className="border border-dashed border-slate-800 rounded-lg p-12 text-center bg-slate-900/30">
-            <h2 className="text-xl font-semibold text-slate-300 mb-2">
-              Metric Dashboard Shell
-            </h2>
-            <p className="text-slate-400 text-sm max-w-md mx-auto">
-              Select a domain from the sidebar or adjust the timeline above to view historical trend metrics and visualizations.
-            </p>
-          </section>
-        </main>
-      </div>
+        <p className="mt-6 text-sm text-slate-400">
+          Domain dashboards connect here in Phase C.
+        </p>
+      </main>
     </div>
   );
 }
