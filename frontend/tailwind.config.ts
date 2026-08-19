@@ -7,11 +7,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#1B1D1F",
-        paper: "#EEF0EC",
-        "paper-raised": "#F7F8F5",
-        brass: "#A6742C",
-      },
+  ink: "#1B1D1F",
+  paper: "#EEF0EC",
+  "paper-raised": "#F7F8F5",
+  brass: "#A6742C",
+  tier: {
+    official: "#2F6B3C",
+    admin: "#2C5F8A",
+    survey: "#A6742C",
+    historical: "#8B4A9C",
+    academic: "#C4622D",
+    modeled: "#5A5F66",
+    unknown: "#9A9A9A",
+  },
+},
       fontFamily: {
         display: ["var(--font-display)", "serif"],
         mono: ["var(--font-mono)", "monospace"],
@@ -21,3 +30,4 @@ const config: Config = {
   plugins: [],
 };
 export default config;
+
