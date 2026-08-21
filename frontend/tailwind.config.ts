@@ -22,8 +22,9 @@ const config: Config = {
   },
 },
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        display: ['var(--font-display)', 'serif'],
+        sans: ['var(--font-sans)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
       },
     },
   },

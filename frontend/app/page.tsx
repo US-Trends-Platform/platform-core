@@ -1,5 +1,6 @@
 ﻿import { Sidebar } from './components/Sidebar';
 import { Timeline } from './components/Timeline';
+import {ConfidenceBadge} from '@/components/Confidence/ConfidenceBadge';
 
 export default function Home() {
   return (
@@ -13,6 +14,16 @@ export default function Home() {
       <Sidebar />
       <main id="main-content" className="flex-1 p-6">
         <Timeline />
+        <div className="flex gap-2 flex-wrap">
+          <ConfidenceBadge tier="OFFICIAL_MEASUREMENT" />
+          <ConfidenceBadge tier="ADMINISTRATIVE_RECORD" />
+          <ConfidenceBadge tier="SURVEY_ESTIMATE" />
+          <ConfidenceBadge tier="HISTORICAL_RECONSTRUCTION" />
+          <ConfidenceBadge tier="ACADEMIC_ESTIMATE" />
+          <ConfidenceBadge tier="MODELED_DERIVED" />
+          <ConfidenceBadge tier="UNKNOWN" />
+        </div>
+
         <p className="mt-6 text-sm text-slate-400">
           Domain dashboards connect here in Phase C.
         </p>
