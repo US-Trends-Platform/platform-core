@@ -37,7 +37,7 @@ export function GdpChart() {
   }
 
   const option = {
-    title: { text: 'US Nominal GDP', subtext: `Source: FRED · ${data.units.replace(/_/g, ' ')}`, textStyle: { fontFamily: 'var(--font-display)' } },
+    title: { text: 'US Nominal GDP', subtext: `Source: FRED ï¿½ ${data.units.replace(/_/g, ' ')}`, textStyle: { fontFamily: 'var(--font-display)' } },
     tooltip: { trigger: 'axis' },
     xAxis: { type: 'category', data: data.observations.map((o) => o.date) },
     yAxis: { type: 'value', name: data.units },
@@ -58,7 +58,7 @@ export function GdpChart() {
       <ReactECharts option={option} style={{ height: 400 }} />
       {data.missing.length > 0 && (
         <p className="mt-2 text-xs text-slate">
-          {data.missing.length} quarter(s) not shown — no data available: {data.missing.map((m) => m.date).join(', ')}
+          {data.missing.length} quarter(s) not shown ï¿½ no data available: {data.missing.map((m) => m.date).join(', ')}
         </p>
       )}
     </div>
