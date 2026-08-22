@@ -2,6 +2,7 @@
 import { Timeline } from './components/Timeline';
 import { ConfidenceBadge } from '@/components/Confidence/ConfidenceBadge';
 import { GdpChart } from './components/GdpChart';
+import { UnemploymentChart } from './components/UnemploymentChart';
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
           <ConfidenceBadge tier="UNKNOWN" />
         </div>
         <GdpChart />
+        <UnemploymentChart />
       </main>
     </div>
   );
