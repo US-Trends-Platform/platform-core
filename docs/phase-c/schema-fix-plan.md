@@ -1,4 +1,3 @@
-@'
 # Phase C — Backend Schema Fix Plan
 Status: NOT STARTED. Written 2026-08-23. Read this before touching backend/app/{models,schemas,routers}.
 
@@ -28,7 +27,7 @@ loaded by main.py) expects something different:
   three separate tables.
 - `backend/app/schemas/metric.py`, `backend/app/schemas/observation.py` — match
   the wrong shape above.
-- `backend/app/routers/metrics.py`, `backend/app/routers/observations.py` — 
+- `backend/app/routers/metrics.py`, `backend/app/routers/observations.py` —
   would error immediately if used, because they query columns/tables that do
   not exist in the real database.
 
@@ -76,5 +75,53 @@ correct).
 
 ### Part B: One reusable endpoint instead of one-off files per metric
 Replace `gdp.py` and `unemployment.py` with a single generic endpoint:
+
+```
 GET /api/v1/observations?metric=gdp_nominal
 GET /api/v1/observations?metric=unemployment_rate
+```
+
+Design: same query logic as `gdp.py`/`unemployment.py` today, but the metric
+slug becomes a parameter instead of being hardcoded per file. Once this exists
+and is tested against BOTH gdp_nominal and unemployment_rate (must match the
+old one-off endpoints' output exactly before deleting them), `gdp.py` and
+`unemployment.py` can be safely removed.
+
+### Frontend equivalent
+Replace `GdpChart.tsx` and `UnemploymentChart.tsx` with one
+`MetricChart.tsx` component that takes a metric slug + display name + line
+color/style as props, fetches from the new generic endpoint, and renders.
+Confidence-tier-to-line-style mapping (solid/dashed/dotted) should be looked
+up from `ConfidenceBadge.tsx`'s existing `TIER_META` — don't duplicate that
+mapping a third time.
+
+## Suggested order of work (don't skip steps or test at the end only)
+1. Write `models/domain.py` (new). Test: can query all 10 domains via SQLAlchemy.
+2. Rewrite `models/metric.py`. Test: can query the 2 existing metrics
+   (gdp_nominal, unemployment_rate) via SQLAlchemy, values match what raw SQL
+   returns.
+3. Rewrite `models/observation.py` as three models. Test each against real
+   data (318 GDP standardized rows, 4 GDP missing rows, etc. — exact counts
+   must match what direct SQL queries already confirmed in this project).
+4. Rewrite the two schema files. Test: FastAPI can serialize a query result
+   without errors.
+5. Build the ONE generic `/api/v1/observations?metric=` endpoint. Test: output
+   for `?metric=gdp_nominal` matches `gdp.py`'s current output byte-for-byte
+   (same observations, same missing records, same confidence tiers).
+6. Only after step 5 passes: delete `gdp.py`, `unemployment.py`, wire the
+   generic endpoint into `main.py` instead.
+7. Build `MetricChart.tsx`, confirm it renders identically to the two old
+   chart components, then delete `GdpChart.tsx`/`UnemploymentChart.tsx`.
+8. Old `routers/metrics.py` and `routers/observations.py` — decide if still
+   needed given the new generic endpoint covers their purpose, or retire them
+   too (discuss with project owner before deleting — same "fix, don't delete
+   without asking" rule as everything else in this project).
+
+## Ground truth references (don't guess at table structure — check these)
+- Canonical schema: `data_schema.txt` in project docs (also
+  `backend/db/schema/initial.sql` in the repo) — sections 10 (metrics),
+  11 (raw_observations), 13 (standardized_observations, derived_observations),
+  14 (missing_data_records).
+- Confirm current live structure directly if in doubt:
+  `docker exec -it ustp_postgres psql -U ustp -d ustp_dev -c "\d metrics"`
+  (repeat for any table name to see its real, current columns)
