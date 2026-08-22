@@ -1,16 +1,23 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import metrics, observations
+from app.routers import gdp
 
 app = FastAPI(
     title="US Trends Platform API",
     version="0.1.0",
-    description="Evidence-first historical data observatory — internal API layer (plan §33).",
+    description="Evidence-first historical data observatory - internal API layer.",
 )
 
-app.include_router(metrics.router, prefix=settings.api_v1_prefix)
-app.include_router(observations.router, prefix=settings.api_v1_prefix)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
+
+app.include_router(gdp.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health")
