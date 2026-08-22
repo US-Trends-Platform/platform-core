@@ -1,4 +1,4 @@
-ï»¿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
@@ -37,7 +37,7 @@ export function GdpChart() {
   }
 
   const option = {
-    title: { text: 'US Nominal GDP', subtext: `Source: FRED Â· ${data.units.replace(/_/g, ' ')}`, textStyle: { fontFamily: 'var(--font-display)' } },
+    title: { text: 'US Nominal GDP', subtext: `Source: FRED · ${data.units.replace(/_/g, ' ')}`, textStyle: { fontFamily: 'var(--font-display)' } },
     tooltip: { trigger: 'axis' },
     xAxis: { type: 'category', data: data.observations.map((o) => o.date) },
     yAxis: { type: 'value', name: data.units },
@@ -47,8 +47,8 @@ export function GdpChart() {
         type: 'line',
         data: data.observations.map((o) => o.value),
         smooth: true,
-        lineStyle: { color: '#A6742C' },
-        itemStyle: { color: '#A6742C' },
+        lineStyle: { color: '#2E6B3E' },
+        itemStyle: { color: '#2E6B3E' },
       },
     ],
   };
@@ -58,7 +58,7 @@ export function GdpChart() {
       <ReactECharts option={option} style={{ height: 400 }} />
       {data.missing.length > 0 && (
         <p className="mt-2 text-xs text-slate">
-          {data.missing.length} quarter(s) not shown â€” no data available: {data.missing.map((m) => m.date).join(', ')}
+          {data.missing.length} quarter(s) not shown — no data available: {data.missing.map((m) => m.date).join(', ')}
         </p>
       )}
     </div>

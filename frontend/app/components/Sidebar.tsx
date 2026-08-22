@@ -19,9 +19,12 @@ export const Sidebar: React.FC = () => {
       className="w-64 bg-slate-900 text-slate-100 h-screen p-4 flex flex-col border-r border-slate-800"
       aria-label="Domain Navigation"
     >
-      <h2 className="text-xl font-bold mb-6 text-slate-50 tracking-wide">
+      <h2 className="text-xl font-bold text-slate-50 tracking-wide">
         US Trends Platform
       </h2>
+      <p className="text-xs text-slate-400 mb-6 mt-1">
+        Evidence based infrastructure tracking data trends — 1776 to present
+      </p>
       <nav aria-label="Content Domains">
         <ul className="space-y-1">
           {DOMAINS.map((domain) => (
