@@ -11,6 +11,9 @@ const config: Config = {
   paper: "#EEF0EC",
   "paper-raised": "#F7F8F5",
   brass: "#A6742C",
+  "brass-dark": "#7C5A20",
+  slate: "#64748B",
+  "slate-line": "#E3E5DF",
   tier: {
     official: "#2F6B3C",
     admin: "#2C5F8A",
@@ -31,4 +34,3 @@ const config: Config = {
   plugins: [],
 };
 export default config;
-
