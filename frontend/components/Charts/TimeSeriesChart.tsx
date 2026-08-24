@@ -1,4 +1,3 @@
-TimeSeriesChart.tsx
 // components/charts/TimeSeriesChart.tsx
 // Wired for Phase C: pass real observations and it renders. Empty/undefined
 // data renders the "awaiting data" empty state instead of a broken chart.

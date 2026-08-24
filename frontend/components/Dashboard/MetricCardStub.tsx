@@ -1,4 +1,3 @@
-MetricCardStub.tsx
 // components/dashboard/MetricCardStub.tsx
 // Phase B: structural placeholder only. Phase C wires in real observations.
  

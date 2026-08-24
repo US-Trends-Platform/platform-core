@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 const DOMAINS = [
   { slug: 'demographics', name: 'Demographics' },
@@ -20,7 +20,7 @@ export const Sidebar: React.FC = () => {
       aria-label="Domain Navigation"
     >
       <h2 className="text-xl font-bold text-slate-50 tracking-wide">
-        US Trends Platform
+        US Trends Observatory
       </h2>
       <p className="text-xs text-slate-400 mb-6 mt-1">
         Evidence based infrastructure tracking data trends — 1776 to present
