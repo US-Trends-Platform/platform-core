@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.domain import Domain
 from app.models.metric import Metric
 from app.schemas.metric import MetricRead
 
@@ -16,7 +17,10 @@ def list_metrics(
 ):
     stmt = select(Metric)
     if domain_slug:
-        stmt = stmt.where(Metric.slug == domain_slug)
+        # Filter on the DOMAIN's slug via the domain_id FK, not the metric's own
+        # slug. Comparing Metric.slug here silently returned nothing for every
+        # real domain (e.g. 'economy'), since no metric slug equals a domain slug.
+        stmt = stmt.join(Metric.domain).where(Domain.slug == domain_slug)
     return db.execute(stmt).scalars().all()
 
 
