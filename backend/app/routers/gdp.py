@@ -22,6 +22,9 @@ def get_gdp_series(db: Session = Depends(get_db)):
         FROM standardized_observations so
         JOIN metrics m ON so.metric_id = m.metric_id
         WHERE m.slug = 'gdp_nominal'
+          -- Current version only; revisions supersede, never overwrite (ADR-002)
+          AND so.valid_to IS NULL
+          AND so.observation_status = 'CURRENT'
         ORDER BY observation_date
     """)).fetchall()
 

@@ -25,6 +25,51 @@ confidence_tier_type = SAEnum(ConfidenceTier, name="confidence_tier", create_typ
 confidence_classification_type = confidence_tier_type
 
 
+class ObservationStatus(str, enum.Enum):
+    """Postgres enum `observation_status` (ADR-002 revision handling)."""
+
+    CURRENT = "CURRENT"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class MissingDataReason(str, enum.Enum):
+    """Postgres enum `missing_data_reason` (ADR-005, PRD FR-7)."""
+
+    NO_AUTHORITATIVE_DATASET = "NO_AUTHORITATIVE_DATASET"
+    NOT_YET_PUBLISHED = "NOT_YET_PUBLISHED"
+    HISTORICAL_DATA_UNAVAILABLE = "HISTORICAL_DATA_UNAVAILABLE"
+    METHODOLOGICAL_BREAK = "METHODOLOGICAL_BREAK"
+    SOURCE_DISCONTINUED = "SOURCE_DISCONTINUED"
+    DATA_SUPPRESSION = "DATA_SUPPRESSION"
+    COLLECTION_NOT_STARTED = "COLLECTION_NOT_STARTED"
+    PENDING_RETRIEVAL = "PENDING_RETRIEVAL"
+    UNKNOWN_REASON = "UNKNOWN_REASON"
+
+
+class CadenceType(str, enum.Enum):
+    """Postgres enum `cadence_type`."""
+
+    DAILY = "DAILY"
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+    QUARTERLY = "QUARTERLY"
+    ANNUAL = "ANNUAL"
+    BIENNIAL = "BIENNIAL"
+    TRIENNIAL = "TRIENNIAL"
+    QUINQUENNIAL = "QUINQUENNIAL"
+    DECENNIAL = "DECENNIAL"
+    IRREGULAR = "IRREGULAR"
+    EVENT_BASED = "EVENT_BASED"
+
+
+# These four columns are Postgres ENUM types in the live schema, not VARCHAR.
+# Declaring them as String made reads appear to work while any comparison
+# failed at runtime with "operator does not exist: <enum> = character varying".
+observation_status_type = SAEnum(ObservationStatus, name="observation_status", create_type=False)
+missing_data_reason_type = SAEnum(MissingDataReason, name="missing_data_reason", create_type=False)
+cadence_type = SAEnum(CadenceType, name="cadence_type", create_type=False)
+
+
 class DatasetLifecycleStatus(str, enum.Enum):
     """Plan §21."""
     IDENTIFIED = "identified"

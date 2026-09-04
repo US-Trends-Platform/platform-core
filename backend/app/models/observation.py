@@ -5,7 +5,14 @@ from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Numeric, Strin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import ConfidenceTier, confidence_tier_type
+from app.models.enums import (
+    ConfidenceTier,
+    MissingDataReason,
+    ObservationStatus,
+    confidence_tier_type,
+    missing_data_reason_type,
+    observation_status_type,
+)
 
 
 class RawObservation(Base):
@@ -48,7 +55,9 @@ class StandardizedObservation(Base):
     currency_code: Mapped[str | None] = mapped_column(String(3))
     inflation_basis_year: Mapped[int | None] = mapped_column()
     confidence_tier: Mapped[ConfidenceTier] = mapped_column(confidence_tier_type, nullable=False)
-    observation_status: Mapped[str] = mapped_column(String(32), default="CURRENT", nullable=False)
+    observation_status: Mapped[ObservationStatus] = mapped_column(
+        observation_status_type, default=ObservationStatus.CURRENT, nullable=False
+    )
     valid_from: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
     valid_to: Mapped[datetime | None] = mapped_column(DateTime)
     revision_note: Mapped[str | None] = mapped_column(String)
@@ -70,7 +79,9 @@ class MissingDataRecord(Base):
     metric_id: Mapped[UUID] = mapped_column(ForeignKey("metrics.metric_id"), nullable=False)
     dataset_series_id: Mapped[UUID | None] = mapped_column(ForeignKey("dataset_series.dataset_series_id"))
     observation_date: Mapped[date] = mapped_column(Date, nullable=False)
-    missing_data_reason: Mapped[str] = mapped_column(String(64), nullable=False)
+    missing_data_reason: Mapped[MissingDataReason] = mapped_column(
+        missing_data_reason_type, nullable=False
+    )
     explanation: Mapped[str] = mapped_column(String, nullable=False)
     earliest_available_date: Mapped[date | None] = mapped_column(Date)
     source_note: Mapped[str | None] = mapped_column(String)

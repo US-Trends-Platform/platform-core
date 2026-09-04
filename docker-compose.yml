@@ -1,3 +1,23 @@
+# ============================================================================
+#  DO NOT USE THIS FILE. IT IS BROKEN AND SUPERSEDED.
+#
+#  Use backend/docker-compose.yml instead:
+#      cd backend && docker compose up -d
+#
+#  Why this file must not be run:
+#   1. The `backend` and `frontend` services build from Dockerfiles that DO NOT
+#      EXIST anywhere in this repository. Those services cannot start.
+#   2. The `db` service WILL still start, and creates a DIFFERENT database
+#      (`ustrends`, user `postgres`) on the SAME port 5432 as the real one
+#      (`ustp_dev`, user `ustp`, defined in backend/docker-compose.yml and
+#      referenced by backend/.env). Running this gives you a second, empty
+#      database and a port clash with the real one.
+#
+#  Kept rather than deleted pending a decision on whether to write the two
+#  missing Dockerfiles or remove this file. See
+#  docs/phase-c/other-machine-recovery-plan.md.
+# ============================================================================
+
 version: '3.8'
 
 services:

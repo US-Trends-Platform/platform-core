@@ -6,6 +6,7 @@ from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, fun
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.models.enums import CadenceType, cadence_type
 
 
 class Metric(Base):
@@ -23,7 +24,7 @@ class Metric(Base):
     currency_code: Mapped[str | None] = mapped_column(String(3))
     inflation_basis_year: Mapped[int | None] = mapped_column(Integer)
     geographic_scope: Mapped[str] = mapped_column(String(128), default="US_NATIONAL", nullable=False)
-    default_cadence: Mapped[str | None] = mapped_column(String(32))
+    default_cadence: Mapped[CadenceType | None] = mapped_column(cadence_type)
     methodology: Mapped[str | None] = mapped_column(String)
     known_limitations: Mapped[str | None] = mapped_column(String)
     comparison_note: Mapped[str | None] = mapped_column(String)

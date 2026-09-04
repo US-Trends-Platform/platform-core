@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.enums import ObservationStatus
 from app.models.metric import Metric
 from app.models.observation import MissingDataRecord, StandardizedObservation
 from app.schemas.observation import ObservationSeriesResponse
@@ -25,7 +26,15 @@ def get_metric_observations(
             StandardizedObservation.standardized_value,
             StandardizedObservation.confidence_tier,
         )
-        .where(StandardizedObservation.metric_id == metric_row.metric_id)
+        # Return only the CURRENT version of each observation. Per ADR-002 a
+        # revision supersedes rather than overwrites: the old row is kept with
+        # valid_to set. Without this filter, the first time a source revises a
+        # figure the chart would show two values for the same date.
+        .where(
+            StandardizedObservation.metric_id == metric_row.metric_id,
+            StandardizedObservation.valid_to.is_(None),
+            StandardizedObservation.observation_status == ObservationStatus.CURRENT,
+        )
         .order_by(StandardizedObservation.observation_date)
     ).all()
 
@@ -53,7 +62,7 @@ def get_metric_observations(
         "missing": [
             {
                 "date": str(row.observation_date),
-                "reason": row.missing_data_reason,
+                "reason": getattr(row.missing_data_reason, "value", row.missing_data_reason),
                 "explanation": row.explanation,
             }
             for row in missing_rows
