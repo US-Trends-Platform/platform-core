@@ -7,3 +7,4 @@ alembic>=1.13,<1.14
 psycopg[binary]>=3.2,<3.3
 python-dotenv>=1.0,<2.0
 requests>=2.32,<3.0
+PyYAML>=6.0,<7.0

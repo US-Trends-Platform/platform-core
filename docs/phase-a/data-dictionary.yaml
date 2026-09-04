@@ -342,7 +342,7 @@ yaml
 
 metric:
   schema_id: cpi_all_items
-  name: Consumer Price Index for All Urban Consumers: All Items
+  name: "Consumer Price Index for All Urban Consumers: All Items"
   domain: inflation-cost-of-living
   definition: |
     Measure of average change over time in prices paid by urban consumers for a market basket of consumer goods and services.
@@ -772,7 +772,7 @@ metric:
     - dataset_slug: usda_nass_annual_surveys
       series_code: ESTIMATE_FARM_COUNT_TOTAL
       role: PRE_POST_BREAK
-      start_date:1146-01-01  # Actually 1946, but demonstrating placeholder
+      start_date: 1146-01-01  # FIXME: placeholder — almost certainly 1946
       end_date: null
       methodology_notes: Survey‑based estimate; distinct from Census
 11.3 net_farm_income_inflation_adjusted
@@ -895,7 +895,7 @@ metric:
   schema_id: farm_income_as_pct_of_median_household_income
   name: Farm Income as Percentage of Median Household Income
   domain: agriculture-farming
-  definition: Derived metric: (Net Farm Income per Farm) ÷ (Median Household Income) × 100
+  definition: "Derived metric: (Net Farm Income per Farm) ÷ (Median Household Income) × 100"
   short_name: Farm Income Relative to Median
   units: percent
   geographic_scope: US_NATIONAL
