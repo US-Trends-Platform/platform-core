@@ -3,23 +3,26 @@ import enum
 from sqlalchemy import Enum as SAEnum
 
 
-class ConfidenceClassification(str, enum.Enum):
-    """Plan §18 — every observation gets exactly one."""
-    OFFICIAL_MEASUREMENT = "official_measurement"
-    ADMINISTRATIVE_RECORD = "administrative_record"
-    SURVEY_ESTIMATE = "survey_estimate"
-    HISTORICAL_RECONSTRUCTION = "historical_reconstruction"
-    ACADEMIC_ESTIMATE = "academic_estimate"
-    MODELED_DERIVED = "modeled_derived"
-    UNKNOWN = "unknown"
+class ConfidenceTier(str, enum.Enum):
+    """Canonical confidence values used by the live Postgres schema."""
+
+    OFFICIAL_MEASUREMENT = "OFFICIAL_MEASUREMENT"
+    ADMINISTRATIVE_RECORD = "ADMINISTRATIVE_RECORD"
+    SURVEY_ESTIMATE = "SURVEY_ESTIMATE"
+    HISTORICAL_RECONSTRUCTION = "HISTORICAL_RECONSTRUCTION"
+    ACADEMIC_ESTIMATE = "ACADEMIC_ESTIMATE"
+    MODELED_DERIVED = "MODELED_DERIVED"
+    UNKNOWN = "UNKNOWN"
 
 
-# Single shared instance — reuse this exact object in every model that has a
-# confidence column. Declaring SAEnum(ConfidenceClassification, name=...) fresh
-# in each model file creates duplicate CREATE TYPE statements on Postgres.
-confidence_classification_type = SAEnum(
-    ConfidenceClassification, name="confidence_classification"
-)
+# Backward compatibility for legacy imports that still use the older naming.
+ConfidenceClassification = ConfidenceTier
+
+
+# Reuse one shared enum instance so SQLAlchemy does not try to create a second
+# Postgres enum type with the same name.
+confidence_tier_type = SAEnum(ConfidenceTier, name="confidence_tier", create_type=False)
+confidence_classification_type = confidence_tier_type
 
 
 class DatasetLifecycleStatus(str, enum.Enum):

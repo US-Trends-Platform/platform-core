@@ -2,7 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import gdp, unemployment
+from app.routers import gdp, metrics, observations, unemployment
 
 app = FastAPI(
     title="US Trends Platform API",
@@ -17,6 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(metrics.router, prefix=settings.api_v1_prefix)
+app.include_router(observations.router, prefix=settings.api_v1_prefix)
 app.include_router(gdp.router, prefix=settings.api_v1_prefix)
 app.include_router(unemployment.router, prefix=settings.api_v1_prefix)
 
